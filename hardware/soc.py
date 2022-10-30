@@ -75,12 +75,8 @@ def main():
 
     builder_kwargs = builder_argdict(args)
     # Don't build software
-    builder_kwargs["compile_software"] = False
+    # builder_kwargs["compile_software"] = False
 
-    if builder_kwargs["csr_svd"] is None:
-        builder_kwargs["csr_svd"] = "build/basys3.svd"
-    if builder_kwargs["memory_x"] is None:
-        builder_kwargs["memory_x"] = "build/memory.x"
     builder = Builder(soc, **builder_kwargs)
     if args.build:
         builder.build()
