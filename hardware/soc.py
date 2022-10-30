@@ -73,7 +73,15 @@ def main():
     )
     soc.platform.add_extension(digilent_basys3._sdcard_pmod_io)
 
-    builder = Builder(soc, **builder_argdict(args))
+    builder_kwargs = builder_argdict(args)
+    # Don't build software
+    builder_kwargs["compile_software"] = False
+
+    if builder_kwargs["csr_svd"] is None:
+        builder_kwargs["csr_svd"] = "build/basys3.svd"
+    if builder_kwargs["memory_x"] is None:
+        builder_kwargs["memory_x"] = "build/memory.x"
+    builder = Builder(soc, **builder_kwargs)
     if args.build:
         builder.build()
 
