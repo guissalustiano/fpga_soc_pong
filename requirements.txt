@@ -1,0 +1,3 @@
+git+https://github.com/litex-hub/litex-boards.git
+git+https://github.com/enjoy-digital/litex.git
+migen
