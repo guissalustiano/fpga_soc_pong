@@ -60,10 +60,6 @@ def main():
     target_group.add_argument("--build",               action="store_true", help="Build design.")
     target_group.add_argument("--load",                action="store_true", help="Load bitstream.")
     target_group.add_argument("--sys-clk-freq",        default=75e6,        help="System clock frequency.")
-    sdopts = target_group.add_mutually_exclusive_group()
-    sdopts.add_argument("--with-spi-sdcard",     action="store_true", help="Enable SPI-mode SDCard support.")
-    sdopts.add_argument("--with-sdcard",         action="store_true", help="Enable SDCard support.")
-    target_group.add_argument("--sdcard-adapter",      type=str,            help="SDCard PMOD adapter (digilent or numato).")
     viopts = target_group.add_mutually_exclusive_group()
     viopts.add_argument("--with-video-terminal", action="store_true", help="Enable Video Terminal (VGA).")
     builder_args(parser)
@@ -76,10 +72,6 @@ def main():
         **soc_core_argdict(args)
     )
     soc.platform.add_extension(digilent_basys3._sdcard_pmod_io)
-    if args.with_spi_sdcard:
-        soc.add_spi_sdcard()
-    if args.with_sdcard:
-        soc.add_sdcard()
 
     builder = Builder(soc, **builder_argdict(args))
     if args.build:
