@@ -64,6 +64,11 @@ def main():
     viopts.add_argument("--with-video-terminal", action="store_true", help="Enable Video Terminal (VGA).")
     builder_args(parser)
     soc_core_args(parser)
+    
+    parser.set_defaults(gateware_dir='./gateware')
+    parser.set_defaults(software_dir='./software')
+    parser.set_defaults(integrated_main_ram_size=8192)
+    
     args = parser.parse_args()
 
     soc = BaseSoC(
@@ -71,7 +76,6 @@ def main():
         with_video_terminal    = args.with_video_terminal,
         **soc_core_argdict(args)
     )
-    soc.platform.add_extension(digilent_basys3._sdcard_pmod_io)
 
     builder_kwargs = builder_argdict(args)
     # Don't build software
