@@ -201,10 +201,12 @@ int main(void)
 
 	help();
 	prompt();
+	contador_conta_write(1);
 
 	while(1) {
-		leds_out_write(3);
-		console_service();
+		uint64_t count = contador_contagem_read();
+		leds_out_write(count>>24);
+		// console_service();
 	}
 
 	return 0;

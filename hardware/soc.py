@@ -11,6 +11,8 @@ from litex.soc.integration.builder import *
 from litex.soc.cores.video import VideoVGAPHY
 from litex.soc.cores.led import LedChaser
 
+from contador import Contador
+
 # CRG ----------------------------------------------------------------------------------------------
 
 class _CRG(LiteXModule):
@@ -33,6 +35,9 @@ class _CRG(LiteXModule):
 class BaseSoC(SoCCore):
     def __init__(self, sys_clk_freq=int(75e6), with_led_chaser=True, with_video_terminal=False, **kwargs):
         platform = digilent_basys3.Platform()
+        platform.add_source('hardware/contador.v')
+
+        self.submodules.contador = Contador(64)
 
         # CRG --------------------------------------------------------------------------------------
         self.crg = _CRG(platform, sys_clk_freq)
