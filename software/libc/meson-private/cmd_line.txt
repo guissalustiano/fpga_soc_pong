@@ -7,6 +7,7 @@ io-long-long = true
 format-default = integer
 includedir = picolibc/riscv64-unknown-elf/include
 libdir = picolibc/riscv64-unknown-elf/lib
+backend = ninja
 
 [properties]
 cross_file = ['/home/guiss/projects/usp/labdig/fpga_soc_pong/software/libc/cross.txt']
