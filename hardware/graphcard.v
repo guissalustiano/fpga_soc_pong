@@ -1,20 +1,19 @@
 module vga_driver
 #(
-    parameter FRAME_WIDTH = 1600,
-    parameter FRAME_HEIGHT = 900,
+    parameter FRAME_WIDTH = 1280,
+    parameter FRAME_HEIGHT = 960,
     
-    parameter H_FP = 24, // H front porch width (pixels)
-    parameter H_PW = 80, // H sync pulse width (pixels)
-    parameter H_MAX = 1800, // H total period (pixels)
+    parameter H_FP = 80, // H front porch width (pixels)
+    parameter H_PW = 136, // H sync pulse width (pixels)
+    parameter H_MAX = 1712, // H total period (pixels)
   
     parameter V_FP = 1, // V front porch width (lines)
     parameter V_PW = 3, // V sync pulse width (lines)
-    parameter V_MAX = 1000, // V total period (lines)
+    parameter V_MAX = 994, // V total period (lines)
   
     parameter H_POL = 0,
     parameter V_POL = 0
 ) (
-  input clock, // clk 100MHz
   input pxlClk, //clk 108MHz active
   input reset,
   input [11:0] rgb_input,
@@ -26,7 +25,7 @@ module vga_driver
   output [3:0] vgaGreen,
   output reg Hsync,
   output reg Vsync,
-  output buzy
+  output busy
 );
 
   // Horizontal counter
@@ -62,5 +61,5 @@ module vga_driver
   wire active = hCntr < FRAME_WIDTH && vCntr < FRAME_HEIGHT;
   assign {vgaRed, vgaBlue, vgaGreen} = active ? rgb_input : 0;
 
-  assign buzy = hCntr <= FRAME_WIDTH & vCntr <= FRAME_HEIGHT; 
+  assign busy = hCntr <= FRAME_WIDTH & vCntr <= FRAME_HEIGHT; 
 endmodule
