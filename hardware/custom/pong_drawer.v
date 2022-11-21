@@ -19,7 +19,8 @@ module pong_drawer
   output [3:0] vgaBlue,
   output [3:0] vgaGreen,
   output Hsync,
-  output Vsync
+  output Vsync,
+  output busy
 );
 wire [13:0] hCntr;
 wire [13:0] vCntr;
@@ -50,7 +51,8 @@ vga_driver driver
   .Hsync(Hsync),
   .Vsync(Vsync),
   .hCntr(hCntr),
-  .vCntr(vCntr)
+  .vCntr(vCntr),
+  .busy(busy)
 );
 
 endmodule

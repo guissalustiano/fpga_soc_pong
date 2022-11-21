@@ -206,6 +206,7 @@ int main(void)
 	while(1) {
 		uint64_t count = contador_contagem_read();
 		leds_out_write(count>>24);
+		drawer_cursor_left_py_write(400);
 		// console_service();
 	}
 
