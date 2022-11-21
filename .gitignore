@@ -1,3 +1,5 @@
+demo/
+software/include/generated/
 gateware
 build
 prog
