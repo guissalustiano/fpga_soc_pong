@@ -7,22 +7,21 @@
 #include "paddle.h"
 #include "table.h"
 
-#define TABLE_HEIGHT 900
-#define TABLE_WIDTH 900
-#define PADDLE_OFFSET 10
-#define PADDLE_LENGTH 5
+#define TABLE_HEIGHT 960
+#define TABLE_WIDTH 1280
+#define PADDLE_OFFSET 20
+#define PADDLE_LENGTH 160
 
 typedef struct {
-    table table;
-    ball ball;
-    paddle rightPaddle, leftPaddle;
-    uint8_t rightScore, leftScore;
+  table table;
+  ball ball;
+  paddle rightPaddle, leftPaddle;
+  uint16_t rightScore, leftScore;
 } game;
 
-
-void update(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy);
-void updatePosition(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy);
-void updateScore(game* game);
+void update(game *game, int16_t rightPaddleDy, int16_t leftPaddleDy);
+void updatePosition(game *game, int16_t rightPaddleDy, int16_t leftPaddleDy);
+void updateScore(game *game);
 uint16_t pointScoredAgainst(ball ball, paddle paddle);
 uint16_t collisionWithPaddle(ball ball, paddle paddle);
 uint16_t collisionWithTable(ball ball, table table);
