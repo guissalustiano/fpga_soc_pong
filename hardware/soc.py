@@ -11,7 +11,7 @@ from litex.soc.integration.builder import *
 from litex.soc.cores.video import VideoVGAPHY
 from litex.soc.cores.led import LedChaser
 
-from contador import Contador
+from status import Status
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -37,7 +37,10 @@ class BaseSoC(SoCCore):
         platform = digilent_basys3.Platform()
         platform.add_source('hardware/contador.v')
 
-        self.submodules.contador = Contador(64)
+        self.submodules.button_up = Status(platform.request('user_btnu'))
+        self.submodules.button_down = Status(platform.request('user_btnd'))
+        self.submodules.button_left = Status(platform.request('user_btnl'))
+        self.submodules.button_right = Status(platform.request('user_btnr'))
 
         # CRG --------------------------------------------------------------------------------------
         self.crg = _CRG(platform, sys_clk_freq)
@@ -57,7 +60,7 @@ class BaseSoC(SoCCore):
                 pads         = platform.request_all("user_led"),
                 sys_clk_freq = sys_clk_freq)
 
-# Build --------------------------------------------------------------------------------------------  
+# Build --------------------------------------------------------------------------------------------
 def main():
     from litex.soc.integration.soc import LiteXSoCArgumentParser
     parser = LiteXSoCArgumentParser(description="LiteX SoC on Basys3")
@@ -69,11 +72,11 @@ def main():
     viopts.add_argument("--with-video-terminal", action="store_true", help="Enable Video Terminal (VGA).")
     builder_args(parser)
     soc_core_args(parser)
-    
+
     parser.set_defaults(gateware_dir='./gateware')
     parser.set_defaults(software_dir='./software')
     parser.set_defaults(integrated_main_ram_size=8192)
-    
+
     args = parser.parse_args()
 
     soc = BaseSoC(
