@@ -1,0 +1,72 @@
+#include "pong.h"
+
+void update(game* game, int8_t rightPaddleDy, int8_t leftPaddleDy) {
+    updateScore(game);
+    updatePosition(game, rightPaddleDy, leftPaddleDy);
+}
+
+void updatePosition(game* game, int8_t rightPaddleDy, int8_t leftPaddleDy) {
+    if (pointScoredAgainst(game->ball, game->rightPaddle) || pointScoredAgainst(game->ball, game->leftPaddle))
+        resetBall(&game->ball);
+
+    if (collisionWithPaddle(game->ball, game->rightPaddle) || collisionWithPaddle(game->ball, game->leftPaddle))
+        bounceOffPaddle(&game->ball);
+    if (collisionWithTable(game->ball, game->table))
+        bounceOffTable(&game->ball);
+
+    movePaddle(&game->rightPaddle, rightPaddleDy);
+    movePaddle(&game->leftPaddle, leftPaddleDy);
+    getPaddleInside(&game->rightPaddle, game->table);
+    getPaddleInside(&game->leftPaddle, game->table);
+    moveBall(&game->ball);
+}
+
+void updateScore(game* game) {
+    if (pointScoredAgainst(game->ball, game->rightPaddle))
+        game->leftScore += 1;
+    else if (pointScoredAgainst(game->ball, game->leftPaddle))
+        game->rightScore += 1;
+}
+
+uint8_t pointScoredAgainst(ball ball, paddle paddle) {
+    return byteAbs(ball.x) > byteAbs(paddle.x);
+}
+
+void getPaddleInside(paddle* paddle, table table) {
+    if (paddle->y + PADDLE_LENGTH/2 > table.height/2)
+        paddle->y = table.height/2 - PADDLE_LENGTH/2;
+    if (paddle->y - PADDLE_LENGTH/2 < -table.height/2)
+        paddle->y = -table.height/2 + PADDLE_LENGTH/2;
+}
+
+uint8_t collisionWithPaddle(ball ball, paddle paddle) {
+    return (
+        byteAbs(ball.x - paddle.x) == 1
+        && byteAbs(ball.y - paddle.y) < PADDLE_LENGTH/2
+    );
+}
+
+uint8_t collisionWithTable(ball ball, table table) {
+    return byteAbs(ball.y) == table.height/2 - 1;
+}
+
+game start() {
+    table table = { .height=TABLE_HEIGHT, .width=TABLE_WIDTH };
+    ball ball = { .x=0, .y=0, .dx=1, .dy=1 };
+    paddle rightPaddle = { .x=(TABLE_WIDTH/2 - PADDLE_OFFSET), .y=0 };
+    paddle leftPaddle = { .x=(-TABLE_WIDTH/2 + PADDLE_OFFSET), .y=0 };
+    uint8_t rightScore, leftScore;
+    rightScore = leftScore = 0;
+
+    game pong = {
+        .table=table,
+        .ball=ball,
+        .rightPaddle=rightPaddle, .leftPaddle=leftPaddle,
+        .rightScore=rightScore, .leftScore=leftScore
+    };
+    return pong;
+}
+
+uint8_t byteAbs(int8_t value) {
+    return value > 0 ? value : -value;
+}
