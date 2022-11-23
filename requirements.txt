@@ -1,6 +1,6 @@
-git+https://github.com/litex-hub/litex-boards.git
+git+https://github.com/guissalustiano/litex-boards.git
 git+https://github.com/enjoy-digital/litex.git
 git+https://github.com/litex-hub/pythondata-software-picolibc.git
-  git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
+git+https://github.com/litex-hub/pythondata-software-compiler_rt.git
 pythondata-cpu-vexriscv
 migen

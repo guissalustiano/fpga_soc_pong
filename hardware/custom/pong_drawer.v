@@ -7,22 +7,22 @@ module pong_drawer
   parameter FRAME_WIDTH = 1280,
   parameter FRAME_HEIGHT = 960
 ) (
-  input pxClk,
+  input clk,
   input rst,
-  input [15:0] sw,
-  input [11:0] color,
-  input [11:0] cursor_left_py,
-  input [11:0] cursor_right_py,
-  input [11:0] ball_py,
-  input [11:0] ball_px,
+  input [15:0] cursor_left_py,
+  input [15:0] cursor_right_py,
+  input [15:0] ball_py,
+  input [15:0] ball_px,
   output [3:0] vgaRed,
   output [3:0] vgaBlue,
   output [3:0] vgaGreen,
   output Hsync,
   output Vsync
 );
+
 wire [13:0] hCntr;
 wire [13:0] vCntr;
+wire [11:0] color = 12'hFFFFFF;
 
 // Draw cursors
 wire draw_left_cursor_x = hCntr > CURSOR_OFFSET && hCntr < CURSOR_OFFSET + CURSOR_WIDTH;
@@ -41,7 +41,7 @@ wire drawer = draw_left_cursor || draw_right_cursor || draw_ball;
 
 vga_driver driver
 (
-  .pxlClk(pxClk),
+  .pxlClk(clk),
   .reset(rst),
   .rgb_input(drawer ? color : 0),
   .vgaRed(vgaRed),
