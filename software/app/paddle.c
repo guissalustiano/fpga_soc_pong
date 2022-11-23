@@ -1,6 +1,6 @@
 #include "paddle.h"
 
-void movePaddle(paddle* paddle, int8_t dy) {
+void movePaddle(paddle* paddle, int16_t dy) {
     paddle->y += dy;
 }
 

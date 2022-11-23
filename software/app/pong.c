@@ -1,11 +1,11 @@
 #include "pong.h"
 
-void update(game* game, int8_t rightPaddleDy, int8_t leftPaddleDy) {
+void update(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy) {
     updateScore(game);
     updatePosition(game, rightPaddleDy, leftPaddleDy);
 }
 
-void updatePosition(game* game, int8_t rightPaddleDy, int8_t leftPaddleDy) {
+void updatePosition(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy) {
     if (pointScoredAgainst(game->ball, game->rightPaddle) || pointScoredAgainst(game->ball, game->leftPaddle))
         resetBall(&game->ball);
 
@@ -28,7 +28,7 @@ void updateScore(game* game) {
         game->rightScore += 1;
 }
 
-uint8_t pointScoredAgainst(ball ball, paddle paddle) {
+uint16_t pointScoredAgainst(ball ball, paddle paddle) {
     return byteAbs(ball.x) > byteAbs(paddle.x);
 }
 
@@ -39,14 +39,14 @@ void getPaddleInside(paddle* paddle, table table) {
         paddle->y = -table.height/2 + PADDLE_LENGTH/2;
 }
 
-uint8_t collisionWithPaddle(ball ball, paddle paddle) {
+uint16_t collisionWithPaddle(ball ball, paddle paddle) {
     return (
         byteAbs(ball.x - paddle.x) == 1
         && byteAbs(ball.y - paddle.y) < PADDLE_LENGTH/2
     );
 }
 
-uint8_t collisionWithTable(ball ball, table table) {
+uint16_t collisionWithTable(ball ball, table table) {
     return byteAbs(ball.y) == table.height/2 - 1;
 }
 
@@ -55,7 +55,7 @@ game start() {
     ball ball = { .x=0, .y=0, .dx=1, .dy=1 };
     paddle rightPaddle = { .x=(TABLE_WIDTH/2 - PADDLE_OFFSET), .y=0 };
     paddle leftPaddle = { .x=(-TABLE_WIDTH/2 + PADDLE_OFFSET), .y=0 };
-    uint8_t rightScore, leftScore;
+    uint16_t rightScore, leftScore;
     rightScore = leftScore = 0;
 
     game pong = {
@@ -67,6 +67,6 @@ game start() {
     return pong;
 }
 
-uint8_t byteAbs(int8_t value) {
+uint16_t byteAbs(int16_t value) {
     return value > 0 ? value : -value;
 }

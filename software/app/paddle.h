@@ -6,10 +6,10 @@
 #include "ball.h"
 
 typedef struct {
-    int8_t x, y;
+    int16_t x, y;
 } paddle;
 
-void movePaddle(paddle* paddle, int8_t dy);
+void movePaddle(paddle* paddle, int16_t dy);
 void bounceOffPaddle(ball* ball);
 
 #endif

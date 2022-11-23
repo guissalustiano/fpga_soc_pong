@@ -4,8 +4,8 @@
 #include <inttypes.h>
 
 typedef struct {
-    int8_t dx, dy;
-    int8_t x, y;
+    int16_t dx, dy;
+    int16_t x, y;
 } ball;
 
 void moveBall(ball* ball);
