@@ -27,7 +27,7 @@ class _CRG(LiteXModule):
 
         pll.register_clkin(platform.request("clk100"), 100e6)
         pll.create_clkout(self.cd_sys, sys_clk_freq)
-        pll.create_clkout(self.cd_vga, 108e6)
+        pll.create_clkout(self.cd_vga, 102.1e6)
         platform.add_false_path_constraints(self.cd_sys.clk, pll.clkin) # Ignore sys_clk to pll.clkin path created by SoC's rst.
         #platform.add_platform_command("set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk100_IBUF]")
 
@@ -37,8 +37,6 @@ class BaseSoC(SoCCore):
     def __init__(self, sys_clk_freq=int(75e6), **kwargs):
         platform = digilent_basys3.Platform()
         platform.add_source_dir('hardware/custom/')
-
-        self.submodules.contador = Contador(64)
         
         vga = platform.request("vga")
         drawer = PongDrawer()
