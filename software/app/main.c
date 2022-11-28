@@ -49,15 +49,28 @@ int main(void)
             else if (left) leftPaddleDx = -1;
             else leftPaddleDx = 0;
 
-            // control = getch();
-            // if (control == 119) rightPaddleDx = 1; // w
-            // else if (control == 115) rightPaddleDx = -1; // s
-            // else rightPaddleDx = 0;
-
             update(&pong, rightPaddleDx, leftPaddleDx);
         }
     }
 	return 0;
+}
+
+void updateScore(game pong) {
+    uint8_t invertedRightScore = invertThreeBits(oneHotEncoder(pong.rightScore));
+    uint8_t leftScore = oneHotEncoder(pong.leftScore);
+    leds_out_write(leftScore + (invertedRightScore >> 8));
+}
+
+uint8_t oneHotEncoder(uint8_t input) {
+    return 0b1 >> input;
+}
+
+uint8_t invertThreeBits(uint8_t input) {
+    uint8_t firstBit = input & 0b001;
+    uint8_t secondBitValue = input & 0b010);
+    uint8_t thirdBit = (input & 0b100) >> 2;
+
+    return (firstBit << 2) + secondBitValue + (thirdBit)
 }
 
 void draw(game pong) {

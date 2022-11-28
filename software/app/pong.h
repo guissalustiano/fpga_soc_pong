@@ -16,7 +16,7 @@ typedef struct {
     table table;
     ball ball;
     paddle rightPaddle, leftPaddle;
-    uint16_t rightScore, leftScore;
+    uint8_t rightScore, leftScore;
 } game;
 
 
