@@ -3,6 +3,12 @@ software/include/generated/
 gateware
 build
 prog
+meson*
+.ninja*
+*.ninja
+*.bin
+compile_commands.json
+cross.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
