@@ -20,22 +20,29 @@
 #define Y_OFFSET TABLE_HEIGHT/2
 
 
+// http://graphics.stanford.edu/~seander/bithacks.html#BitReverseObvious
+uint8_t reflectByte(uint8_t v) {
+    uint8_t r = v; // r will be reversed bits of v; first get LSB of v
+    int s = sizeof(v) * 8 - 1; // extra shift needed at end
+
+    for (v >>= 1; v; v >>= 1) {   
+        r <<= 1;
+        r |= v & 1;
+        s--;
+    }
+    r <<= s; // shift when v's highest bits are zero
+
+  return r;
+}
+
+uint8_t oneHotEncode(uint8_t input) {
+    return 0b1 << input;
+}
+
 void showScore(game pong) {
-    uint8_t invertedRightScore = invertThreeBits(oneHotEncoder(pong.rightScore));
-    uint8_t leftScore = oneHotEncoder(pong.leftScore);
-    leds_out_write(leftScore + (invertedRightScore >> 8));
-}
-
-uint8_t oneHotEncoder(uint8_t input) {
-    return 0b1 >> input;
-}
-
-uint8_t invertThreeBits(uint8_t input) {
-    uint8_t firstBit = input & 0b001;
-    uint8_t secondBitValue = input & 0b010;
-    uint8_t thirdBit = (input & 0b100) >> 2;
-
-    return (firstBit << 2) + secondBitValue + (thirdBit);
+    uint8_t rightScore = oneHotEncode(pong.rightScore) -1;
+    uint8_t invertLeftScore = reflectByte(oneHotEncode(pong.leftScore) -1);
+    leds_out_write((uint16_t) invertLeftScore << 8 | rightScore);
 }
 
 void draw(game pong) {
@@ -81,13 +88,9 @@ int main(void) {
       else
         leftPaddleDy = 0;
 
-      // control = getch();
-      // if (control == 119) rightPaddleDx = 1; // w
-      // else if (control == 115) rightPaddleDx = -1; // s
-      // else rightPaddleDx = 0;
-
       update(&pong, rightPaddleDy, leftPaddleDy);
       draw(pong);
+      showScore(pong);
     }
   }
   return 0;
