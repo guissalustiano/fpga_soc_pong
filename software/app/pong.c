@@ -26,12 +26,15 @@ void updateScore(game* game) {
         game->leftScore += 1;
     else if (pointScoredAgainst(game->ball, game->leftPaddle))
         game->rightScore += 1;
+
+    game->leftWin = game->leftScore == WIN_SCORE ? 1 : 0;
+    game->rightWin = game->rightScore == WIN_SCORE ? 1 : 0;
 }
 
 uint16_t pointScoredAgainst(ball ball, paddle paddle) {
-    return byteAbs(ball.x) > byteAbs(paddle.x);
+    return (ball.x*paddle.x > 0) && (byteAbs(ball.x) > byteAbs(paddle.x));
 }
-
+ 
 void getPaddleInside(paddle* paddle, table table) {
     if (paddle->y + PADDLE_LENGTH/2 > table.height/2)
         paddle->y = table.height/2 - PADDLE_LENGTH/2;
@@ -52,7 +55,7 @@ uint16_t collisionWithTable(ball ball, table table) {
 
 game start() {
     table table = { .height=TABLE_HEIGHT, .width=TABLE_WIDTH };
-    ball ball = { .x=0, .y=0, .dx=1, .dy=0 };
+    ball ball = { .x=0, .y=0, .dx=1, .dy=1 };
     paddle rightPaddle = { .x=(TABLE_WIDTH/2 - PADDLE_OFFSET), .y=0 };
     paddle leftPaddle = { .x=(-TABLE_WIDTH/2 + PADDLE_OFFSET), .y=0 };
     uint16_t rightScore, leftScore;

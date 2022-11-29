@@ -14,11 +14,14 @@
 #define PADDLE_WIDTH 20
 #define BALL_WIDTH 30
 
+#define WIN_SCORE 7
+
 typedef struct {
   table table;
   ball ball;
   paddle rightPaddle, leftPaddle;
   uint8_t rightScore, leftScore;
+  uint8_t rightWin, leftWin;
 } game;
 
 void update(game *game, int16_t rightPaddleDy, int16_t leftPaddleDy);

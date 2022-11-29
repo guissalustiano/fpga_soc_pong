@@ -14,7 +14,8 @@
 #include "time.h"
 
 #define CLOCK_FREQUENCY 100e6
-#define UPDATE_PERIOD_IN_SECONDS 1 / 360
+#define UPDATE_PERIOD_IN_SECONDS 1 / 480
+#define LED_BLINK_PERIOD_IN_SECONDS 3
 
 #define X_OFFSET TABLE_WIDTH/2
 #define Y_OFFSET TABLE_HEIGHT/2
@@ -40,8 +41,8 @@ uint8_t oneHotEncode(uint8_t input) {
 }
 
 void showScore(game pong) {
-    uint8_t rightScore = oneHotEncode(pong.rightScore) -1;
-    uint8_t invertLeftScore = reflectByte(oneHotEncode(pong.leftScore) -1);
+    uint8_t rightScore = oneHotEncode(pong.rightScore + 1) - 1;
+    uint8_t invertLeftScore = reflectByte(oneHotEncode(pong.leftScore + 1)- 1) ;
     leds_out_write((uint16_t) invertLeftScore << 8 | rightScore);
 }
 
@@ -65,32 +66,45 @@ int main(void) {
   int lastEvent = 0;
   int16_t rightPaddleDy, leftPaddleDy = 0;
   int16_t up, down, left, right = 0;
+  uint8_t gameOn = 1;
+  uint32_t leds = 0;
 
   while (1) {
+    if (pong.leftWin || pong.rightWin) {
+      if (pong.rightWin) {
+        leds_out_write(0x00FF);
+      } else if (pong.leftWin) {
+        leds_out_write(0xFF00);
+      }
+      
+      msleep(200);
+      leds_out_write(0);
+      msleep(200);
+    } else if (gameOn) {
+      if (elapsed(&lastEvent, (CLOCK_FREQUENCY * UPDATE_PERIOD_IN_SECONDS))) {
+        up = button_up_output_read();
+        down = button_down_output_read();
+        left = button_left_output_read();
+        right = button_right_output_read();
 
-    if (elapsed(&lastEvent, (CLOCK_FREQUENCY * UPDATE_PERIOD_IN_SECONDS))) {
-      up = button_up_output_read();
-      down = button_down_output_read();
-      left = button_left_output_read();
-      right = button_right_output_read();
+        if (right)
+          rightPaddleDy = 1;
+        else if (up)
+          rightPaddleDy = -1;
+        else
+          rightPaddleDy = 0;
 
-      if (right)
-        rightPaddleDy = 1;
-      else if (up)
-        rightPaddleDy = -1;
-      else
-        rightPaddleDy = 0;
+        if (down)
+          leftPaddleDy = 1;
+        else if (left)
+          leftPaddleDy = -1;
+        else
+          leftPaddleDy = 0;
 
-      if (down)
-        leftPaddleDy = 1;
-      else if (left)
-        leftPaddleDy = -1;
-      else
-        leftPaddleDy = 0;
-
-      update(&pong, rightPaddleDy, leftPaddleDy);
-      draw(pong);
-      showScore(pong);
+        update(&pong, rightPaddleDy, leftPaddleDy);
+        draw(pong);
+        showScore(pong);
+      }
     }
   }
   return 0;
