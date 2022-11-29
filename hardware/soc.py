@@ -12,6 +12,7 @@ from litex.soc.cores.led import LedChaser
 
 from status import Status
 from pong_drawer import PongDrawer
+from servo_control import ServoControl
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -51,6 +52,22 @@ class BaseSoC(SoCCore):
             vga.r.eq(drawer.vgaRed),
             vga.g.eq(drawer.vgaGreen),
             vga.b.eq(drawer.vgaBlue),
+        ]
+
+        # Left servo
+        servo_pin_left = platform.request("") # TODO: Map with a pin
+        servo_left = ServoControl()
+        self.submodules.servo_left = servo_left
+        self.comb += [
+            servo_left.controle.eq(servo_pin_left)
+        ]
+
+        # Right servo
+        servo_pin_right = platform.request("") # TODO: Map with a pin
+        servo_right = ServoControl()
+        self.submodules.servo_right = servo_right
+        self.comb += [
+            servo_right.controle.eq(servo_pin_right)
         ]
 
 
