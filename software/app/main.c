@@ -19,43 +19,8 @@
 #define X_OFFSET TABLE_WIDTH/2
 #define Y_OFFSET TABLE_HEIGHT/2
 
-int main(void)
-{
-#ifdef CONFIG_CPU_HAS_INTERRUPT
-	irq_setmask(0);
-	irq_setie(1);
-#endif
-	uart_init();
-	game pong = start();
-    time_init();
 
-    int lastEvent = 0;
-    int16_t rightPaddleDx, leftPaddleDx = 0;
-    int16_t up, down, left, right = 0;
-
-    while (1) {
-
-        if (elapsed(&lastEvent, (CLOCK_FREQUENCY * UPDATE_PERIOD_IN_SECONDS))) {
-            up = button_up_output_read();
-            down = button_down_output_read();
-            left = button_left_output_read();
-            right = button_right_output_read();
-
-            if (up) rightPaddleDx = 1;
-            else if (down) rightPaddleDx = -1;
-            else rightPaddleDx = 0;
-
-            if (right) leftPaddleDx = 1;
-            else if (left) leftPaddleDx = -1;
-            else leftPaddleDx = 0;
-
-            update(&pong, rightPaddleDx, leftPaddleDx);
-        }
-    }
-	return 0;
-}
-
-void updateScore(game pong) {
+void showScore(game pong) {
     uint8_t invertedRightScore = invertThreeBits(oneHotEncoder(pong.rightScore));
     uint8_t leftScore = oneHotEncoder(pong.leftScore);
     leds_out_write(leftScore + (invertedRightScore >> 8));
@@ -67,10 +32,10 @@ uint8_t oneHotEncoder(uint8_t input) {
 
 uint8_t invertThreeBits(uint8_t input) {
     uint8_t firstBit = input & 0b001;
-    uint8_t secondBitValue = input & 0b010);
+    uint8_t secondBitValue = input & 0b010;
     uint8_t thirdBit = (input & 0b100) >> 2;
 
-    return (firstBit << 2) + secondBitValue + (thirdBit)
+    return (firstBit << 2) + secondBitValue + (thirdBit);
 }
 
 void draw(game pong) {

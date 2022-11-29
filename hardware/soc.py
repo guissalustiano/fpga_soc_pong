@@ -55,20 +55,20 @@ class BaseSoC(SoCCore):
         ]
 
         # Left servo
-        servo_pin_left = platform.request("") # TODO: Map with a pin
-        servo_left = ServoControl()
-        self.submodules.servo_left = servo_left
-        self.comb += [
-            servo_left.controle.eq(servo_pin_left)
-        ]
+        # servo_pin_left = platform.request("") # TODO: Map with a pin
+        # servo_left = ServoControl()
+        # self.submodules.servo_left = servo_left
+        # self.comb += [
+        #     servo_left.controle.eq(servo_pin_left)
+        # ]
 
-        # Right servo
-        servo_pin_right = platform.request("") # TODO: Map with a pin
-        servo_right = ServoControl()
-        self.submodules.servo_right = servo_right
-        self.comb += [
-            servo_right.controle.eq(servo_pin_right)
-        ]
+        # # Right servo
+        # servo_pin_right = platform.request("") # TODO: Map with a pin
+        # servo_right = ServoControl()
+        # self.submodules.servo_right = servo_right
+        # self.comb += [
+        #     servo_right.controle.eq(servo_pin_right)
+        # ]
 
 
         # CRG --------------------------------------------------------------------------------------

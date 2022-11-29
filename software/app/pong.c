@@ -41,18 +41,18 @@ void getPaddleInside(paddle* paddle, table table) {
 
 uint16_t collisionWithPaddle(ball ball, paddle paddle) {
     return (
-        byteAbs(ball.x - paddle.x) == 1
-        && byteAbs(ball.y - paddle.y) < PADDLE_LENGTH/2
+        byteAbs(ball.x - paddle.x) == PADDLE_WIDTH/2 + BALL_WIDTH/2
+        && byteAbs(ball.y - paddle.y) < PADDLE_LENGTH/2 + BALL_WIDTH/2
     );
 }
 
 uint16_t collisionWithTable(ball ball, table table) {
-    return byteAbs(ball.y) == table.height/2 - 1;
+    return byteAbs(ball.y) == table.height/2 - BALL_WIDTH/2;
 }
 
 game start() {
     table table = { .height=TABLE_HEIGHT, .width=TABLE_WIDTH };
-    ball ball = { .x=0, .y=0, .dx=1, .dy=1 };
+    ball ball = { .x=0, .y=0, .dx=1, .dy=0 };
     paddle rightPaddle = { .x=(TABLE_WIDTH/2 - PADDLE_OFFSET), .y=0 };
     paddle leftPaddle = { .x=(-TABLE_WIDTH/2 + PADDLE_OFFSET), .y=0 };
     uint16_t rightScore, leftScore;

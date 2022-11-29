@@ -380,6 +380,8 @@
 /* The Picolibc major version number. */
 #define _PICOLIBC__ 1
 
+#define _PICO_EXIT
+
 #undef _REENT_GLOBAL_ATEXIT
 
 #define _RETARGETABLE_LOCKING
