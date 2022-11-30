@@ -21,6 +21,7 @@ class _CRG(LiteXModule):
         self.rst    = Signal()
         self.cd_sys = ClockDomain()
         self.cd_vga = ClockDomain()
+        self.cd_pwm = ClockDomain()
 
         self.pll = pll = S7MMCM(speedgrade=-1)
         self.comb += pll.reset.eq(platform.request("user_btnc") | self.rst)
@@ -28,6 +29,7 @@ class _CRG(LiteXModule):
         pll.register_clkin(platform.request("clk100"), 100e6)
         pll.create_clkout(self.cd_sys, sys_clk_freq)
         pll.create_clkout(self.cd_vga, 102.1e6)
+        pll.create_clkout(self.cd_pwm, 10e6)
         platform.add_false_path_constraints(self.cd_sys.clk, pll.clkin) # Ignore sys_clk to pll.clkin path created by SoC's rst.
         #platform.add_platform_command("set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk100_IBUF]")
 
@@ -54,21 +56,20 @@ class BaseSoC(SoCCore):
             vga.b.eq(drawer.vgaBlue),
         ]
 
+        gpio = platform.request('gpio')
         # Left servo
-        # servo_pin_left = platform.request("") # TODO: Map with a pin
-        # servo_left = ServoControl()
-        # self.submodules.servo_left = servo_left
-        # self.comb += [
-        #     servo_left.controle.eq(servo_pin_left)
-        # ]
+        servo_left = ServoControl()
+        self.submodules.servo_left = servo_left
+        self.comb += [
+            gpio.a1.eq(servo_left.controle),
+        ]
 
-        # # Right servo
-        # servo_pin_right = platform.request("") # TODO: Map with a pin
-        # servo_right = ServoControl()
-        # self.submodules.servo_right = servo_right
-        # self.comb += [
-        #     servo_right.controle.eq(servo_pin_right)
-        # ]
+        # Right servo
+        servo_right = ServoControl()
+        self.submodules.servo_right = servo_right
+        self.comb += [
+            gpio.a2.eq(servo_right.controle),
+        ]
 
 
         # CRG --------------------------------------------------------------------------------------

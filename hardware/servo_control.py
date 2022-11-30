@@ -6,7 +6,7 @@ from litex.soc.integration.doc import AutoDoc, ModuleDoc
 
 class ServoControl(Module, AutoCSR, AutoDoc):
     def __init__(self):
-        self.clock = ClockSignal()
+        self.clock = ClockSignal('pwm')
         self.reset = ResetSignal()
         self.posicao = CSRStorage(1)
         self.controle = Signal(1)

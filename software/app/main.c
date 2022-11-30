@@ -62,6 +62,8 @@ int main(void) {
   uart_init();
   game pong = start();
   time_init();
+  servo_left_posicao_write(0);
+  servo_right_posicao_write(0)
 
   int lastEvent = 0;
   int16_t rightPaddleDy, leftPaddleDy = 0;
@@ -73,8 +75,10 @@ int main(void) {
     if (pong.leftWin || pong.rightWin) {
       if (pong.rightWin) {
         leds_out_write(0x00FF);
+        servo_right_posicao_write(1);
       } else if (pong.leftWin) {
         leds_out_write(0xFF00);
+        servo_left_posicao_write(1);
       }
       
       msleep(200);

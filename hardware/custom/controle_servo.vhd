@@ -13,7 +13,7 @@ end controle_servo;
 
 architecture rtl of controle_servo is
 
-  constant CONTAGEM_MAXIMA : integer := 2_000_000;
+  constant CONTAGEM_MAXIMA : integer := 200_000;
   signal contagem     : integer range 0 to CONTAGEM_MAXIMA-1;
   signal largura_pwm  : integer range 0 to CONTAGEM_MAXIMA-1;
   signal s_largura    : integer range 0 to CONTAGEM_MAXIMA-1;
@@ -52,9 +52,9 @@ begin
   begin
     case posicao is
 		-- bandeira abaixada
-      when '0' =>    s_largura <=    150_000;  -- pulso de  1.5 ms
+      when '0' =>    s_largura <=    10_000;  -- pulso de  1.5 ms
 		-- bandeira levantada
-      when '1' =>    s_largura <=   200_000;  -- pulso de 2 ms
+      when '1' =>    s_largura <=   20_000;  -- pulso de 2 ms
       when others =>  s_largura <=     0;  -- nulo   saida 0
     end case;
   end process;
