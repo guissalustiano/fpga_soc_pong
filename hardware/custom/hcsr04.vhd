@@ -720,7 +720,7 @@ begin
       pronto => open
 	);
 
-	s_limpa_reg <= reset;
+	s_limpa_reg <= zera or reset;
 
 end architecture;
 
@@ -782,9 +782,11 @@ begin
     process (medir, echo, fim_medida, Eatual)
     begin
       case Eatual is
-        when inicial =>         Eprox <= preparacao;
+        when inicial =>         if medir='0' then   Eprox <= inicial;
+                                else                Eprox <= preparacao;
+                                end if;
         when preparacao =>      Eprox <= envia_trigger;
-        when envia_trigger =>   Eprox <= espera_echo;
+        when envia_trigger =>   Eprox <= armazenamento;
         when espera_echo =>     if echo='0' then Eprox <= espera_echo;
                                 else             Eprox <= medida;
                                 end if;
@@ -833,7 +835,7 @@ entity interface_hcsr04 is
 		medir : in std_logic;
 		echo : in std_logic;
 		trigger : out std_logic;
-		medida : out std_logic_vector(15 downto 0); -- 3 digitos BCD
+		medida : out std_logic_vector(15 downto 0);
 		pronto : out std_logic
 	);
 end entity interface_hcsr04;
@@ -901,5 +903,84 @@ begin
 		registra => s_registra,
 		pronto => pronto
 	);
+
+end architecture;
+
+---------------------------------------------------
+---------------------------------------------------
+---------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity continuous_measure is
+    port (
+		clock : in std_logic;
+		reset : in std_logic;
+		echo : in std_logic;
+		trigger : out std_logic;
+		medida : out std_logic_vector(15 downto 0);
+        pronto: out std_logic
+    );
+end entity continuous_measure;
+
+architecture arch of continuous_measure is
+
+    component interface_hcsr04 is
+	    port (
+		    clock : in std_logic;
+		    reset : in std_logic;
+		    medir : in std_logic;
+		    echo : in std_logic;
+		    trigger : out std_logic;
+		    medida : out std_logic_vector(15 downto 0);
+		    pronto : out std_logic
+	    );
+    end component;
+
+    component contador_m is
+        generic (
+            constant M : integer := 50;
+            constant N : integer := 6
+        );
+        port (
+            clock : in  std_logic;
+            zera  : in  std_logic;
+            conta : in  std_logic;
+            Q     : out std_logic_vector (N-1 downto 0);
+            fim   : out std_logic;
+            meio  : out std_logic
+        );
+    end component;
+
+    constant PULSE_PERIOD_IN_CLOCKS: natural := 600_000;
+
+    signal done, delayed_done: std_logic;
+
+begin
+
+    update_counter: contador_m
+        generic map(M=>PULSE_PERIOD_IN_CLOCKS, N=>20)
+        port map(
+            clock, delayed_done, '1',
+            open, done, open
+        );
+
+    delay: process(clock)
+    begin
+        if clock'event and clock = '1' then
+            delayed_done <= done;
+        end if;
+    end process;
+
+    interface: interface_hcsr04
+	    port map(
+		    clock   => clock,
+		    reset   => reset,
+		    medir   => done,
+		    echo    => echo,
+		    trigger => trigger,
+		    medida  => medida,
+		    pronto  => pronto
+	    );
 
 end architecture;

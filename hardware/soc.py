@@ -5,7 +5,6 @@ from litex.gen import LiteXModule
 from litex_boards.platforms import digilent_basys3
 
 from litex.soc.cores.clock import *
-from litex.soc.integration.soc import SoCRegion
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
 from litex.soc.cores.led import LedChaser
@@ -13,7 +12,7 @@ from litex.soc.cores.led import LedChaser
 from status import Status
 from pong_drawer import PongDrawer
 from servo_control import ServoControl
-from interface_hcsr04 import InterfaceHcsr04
+from distance_sensor import DistanceSensor
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -73,14 +72,14 @@ class BaseSoC(SoCCore):
         ]
 
         # Left Sonar
-        self.submodules.hcsr04_left = hcsr04_left = InterfaceHcsr04()
+        self.submodules.hcsr04_left = hcsr04_left = DistanceSensor()
         self.comb += [
             gpio.c0.eq(hcsr04_left.trigger),
             hcsr04_left.echo.eq(gpio.c6),
         ]
 
         # Left Sonar
-        self.submodules.hcsr04_right = hcsr04_right = InterfaceHcsr04()
+        self.submodules.hcsr04_right = hcsr04_right = DistanceSensor()
         self.comb += [
             gpio.c1.eq(hcsr04_right.trigger),
             hcsr04_right.echo.eq(gpio.c7),
