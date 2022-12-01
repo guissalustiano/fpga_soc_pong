@@ -14,7 +14,7 @@
 #include "time.h"
 
 #define CLOCK_FREQUENCY 100e6
-#define UPDATE_PERIOD_IN_SECONDS 1 / 480
+#define UPDATE_PERIOD_IN_SECONDS 1 / 360
 #define LED_BLINK_PERIOD_IN_SECONDS 3
 
 #define X_OFFSET TABLE_WIDTH/2
@@ -63,13 +63,19 @@ int main(void) {
   game pong = start();
   time_init();
   servo_left_posicao_write(0);
-  servo_right_posicao_write(0)
+  servo_right_posicao_write(0);
+  printf("####\n"); // header to easy search on usb parser
+
+  // // enable sensor
+  // hcsr04_left_medir_write(1);
+  // hcsr04_right_medir_write(1);
 
   int lastEvent = 0;
+  int lastPaddleEvent = 0;
   int16_t rightPaddleDy, leftPaddleDy = 0;
   int16_t up, down, left, right = 0;
   uint8_t gameOn = 1;
-  uint32_t leds = 0;
+  uint32_t leds, left_sensor, right_sensor = 0;
 
   while (1) {
     if (pong.leftWin || pong.rightWin) {
@@ -80,31 +86,34 @@ int main(void) {
         leds_out_write(0xFF00);
         servo_left_posicao_write(1);
       }
+
       
       msleep(200);
       leds_out_write(0);
       msleep(200);
     } else if (gameOn) {
-      if (elapsed(&lastEvent, (CLOCK_FREQUENCY * UPDATE_PERIOD_IN_SECONDS))) {
+      if (elapsed(&lastPaddleEvent, CLOCK_FREQUENCY /16)) {
         up = button_up_output_read();
         down = button_down_output_read();
         left = button_left_output_read();
         right = button_right_output_read();
 
         if (right)
-          rightPaddleDy = 1;
+          rightPaddleDy = 2;
         else if (up)
-          rightPaddleDy = -1;
+          rightPaddleDy = -2;
         else
           rightPaddleDy = 0;
 
         if (down)
-          leftPaddleDy = 1;
+          leftPaddleDy = 2;
         else if (left)
-          leftPaddleDy = -1;
+          leftPaddleDy = -2;
         else
           leftPaddleDy = 0;
+      }
 
+      if (elapsed(&lastEvent, (CLOCK_FREQUENCY * UPDATE_PERIOD_IN_SECONDS))) {
         update(&pong, rightPaddleDy, leftPaddleDy);
         draw(pong);
         showScore(pong);

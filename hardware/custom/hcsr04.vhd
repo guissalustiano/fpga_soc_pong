@@ -1,3 +1,131 @@
+-----------------Laboratorio Digital-------------------------------------
+-- Arquivo   : registrador_n.vhd
+-- Projeto   : Experiencia 3 - Recepcao Serial Assincrona
+-------------------------------------------------------------------------
+-- Descricao : registrador com numero de bits N como generic
+--             com clear assincrono e carga sincrona
+--             baseado no codigo vreg16.vhd do livro
+--             J. Wakerly, Digital design: principles and practices 4e
+-------------------------------------------------------------------------
+-- Revisoes  :
+--     Data        Versao  Autor             Descricao
+--     09/09/2019  1.0     Edson Midorikawa  criacao
+--     08/06/2020  1.1     Edson Midorikawa  revisao e melhoria de codigo
+--     09/09/2020  1.2     Edson Midorikawa  revisao
+--     09/09/2021  1.3     Edson Midorikawa  revisao
+--     03/09/2022  1.4     Edson Midorikawa  revisao do codigo
+-------------------------------------------------------------------------
+--
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity registrador_n is
+    generic (
+       constant N: integer := 8
+    );
+    port (
+       clock  : in  std_logic;
+       clear  : in  std_logic;
+       enable : in  std_logic;
+       D      : in  std_logic_vector (N-1 downto 0);
+       Q      : out std_logic_vector (N-1 downto 0)
+    );
+end entity registrador_n;
+
+architecture registrador_n of registrador_n is
+    signal IQ: std_logic_vector(N-1 downto 0);
+begin
+
+process(clock, clear, enable, IQ)
+    begin
+        if (clear = '1') then IQ <= (others => '0');
+        elsif (clock'event and clock='1') then
+            if (enable='1') then IQ <= D;
+            else IQ <= IQ;
+            end if;
+        end if;
+        Q <= IQ;
+    end process;
+
+end architecture registrador_n;
+
+-----------------------------------------------
+-----------------------------------------------
+-----------------------------------------------
+
+
+------------------------------------------------------------------
+-- Arquivo   : contador_m.vhd
+-- Projeto   : Experiencia 3 - Recepcao Serial Assincrona
+------------------------------------------------------------------
+-- Descricao : contador binario
+--             > parametro M: modulo de contagem
+--             > parametro N: numero de bits da saida
+--
+--             saidas fim de contagem e meio de contagem
+--
+------------------------------------------------------------------
+-- Revisoes  :
+--     Data        Versao  Autor             Descricao
+--     09/09/2021  1.0     Edson Midorikawa  versao inicial
+--     31/08/2022  2.0     Edson Midorikawa  revisao do codigo
+------------------------------------------------------------------
+--
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity contador_m is
+    generic (
+        constant M : integer := 50;
+        constant N : integer := 6
+    );
+    port (
+        clock : in  std_logic;
+        zera  : in  std_logic;
+        conta : in  std_logic;
+        Q     : out std_logic_vector (N-1 downto 0);
+        fim   : out std_logic;
+        meio  : out std_logic
+    );
+end entity contador_m;
+
+architecture contador_m_arch of contador_m is
+    signal IQ: integer range 0 to M-1;
+begin
+
+    process (clock,zera,conta,IQ)
+    begin
+        if zera='1' then IQ <= 0;
+        elsif clock'event and clock='1' then
+            if conta='1' then
+                if IQ=M-1 then IQ <= 0;
+                else IQ <= IQ + 1;
+                end if;
+            end if;
+        end if;
+
+        -- fim de contagem
+        if IQ=M-1 then fim <= '1';
+        else fim <= '0';
+        end if;
+
+        -- meio da contagem
+        if IQ=M/2-1 then meio <= '1';
+        else meio <= '0';
+        end if;
+
+        Q <= std_logic_vector(to_unsigned(IQ, Q'length));
+
+    end process;
+end architecture;
+
+--------------------------------------------------
+--------------------------------------------------
+--------------------------------------------------
+
 --------------------------------------------------------------------
 -- Arquivo   : contador_bcd_3digitos.vhd
 -- Projeto   : Experiencia 4 - Interface com Sensor de Distancia
@@ -22,14 +150,14 @@ entity contador is
         clock   : in  std_logic;
         zera    : in  std_logic;
         conta   : in  std_logic;
-        contagem : out std_logic_vector(11 downto 0);
+        contagem : out std_logic_vector(15 downto 0);
         fim     : out std_logic
     );
 end entity;
 
 architecture comportamental of contador is
 
-    signal s_contagem : unsigned(11 downto 0);
+    signal s_contagem : unsigned(15 downto 0);
 
 begin
 
@@ -78,8 +206,8 @@ use ieee.numeric_std.all;
 
 entity analisa_m is
     generic (
-        constant M : integer := 50;  
-        constant N : integer := 6 
+        constant M : integer := 50;
+        constant N : integer := 6
     );
     port (
         valor            : in  std_logic_vector (N-1 downto 0);
@@ -93,7 +221,7 @@ end entity analisa_m;
 architecture comportamental of analisa_m is
     signal v: integer range 0 to M-1;
 begin
-  
+
     v <= to_integer(unsigned(valor));
 
     zero            <= '1' when v=0 else '0';
@@ -117,38 +245,38 @@ entity contador_cm_fd is
 	);
 	port (
 		clock      : in  std_logic;
-		
+
 		-- Entradas de controle
 		conta_bcd  : in  std_logic;
 		zera_bcd   : in  std_logic;
 		conta_tick : in  std_logic;
 		zera_tick  : in  std_logic;
-		
+
 		-- Saidas de controle
 		fim       : out std_logic;
 		arredonda : out std_logic;
 		tick      : out std_logic;
 
 		-- Saida da contagem
-        contagem : out std_logic_vector(11 downto 0)
+        contagem : out std_logic_vector(15 downto 0)
 	);
 end entity;
 
 architecture arch of contador_cm_fd is
-component contador is 
-    port ( 
+component contador is
+    port (
         clock   : in  std_logic;
         zera    : in  std_logic;
         conta   : in  std_logic;
-        contagem : out std_logic_vector(11 downto 0);
+        contagem : out std_logic_vector(15 downto 0);
         fim     : out std_logic
     );
 end component;
 
 component analisa_m is
     generic (
-        constant M : integer := 50;  
-        constant N : integer := 6 
+        constant M : integer := 50;
+        constant N : integer := 6
     );
     port (
         valor            : in  std_logic_vector (N-1 downto 0);
@@ -161,8 +289,8 @@ end component;
 
 component contador_m is
     generic (
-        constant M : integer := 50;  
-        constant N : integer := 6 
+        constant M : integer := 50;
+        constant N : integer := 6
     );
     port (
         clock : in  std_logic;
@@ -185,12 +313,12 @@ begin
 		contagem => contagem,
 		fim => fim
 	);
-	
+
 	-- Decide se deve arredondar antes de devolver o resultado
 	comp_arredonda: analisa_m generic map(
 		M => R,
 		N => N
-	) 
+	)
 	port map(
 		valor => s_contagem_tick,
       zero => open,
@@ -198,7 +326,7 @@ begin
       fim  => open,
       metade_superior => arredonda
 	);
-	
+
 	-- Gera os ticks a cada cm
 	cont_tick: contador_m generic map(
 		M => R,
@@ -221,16 +349,16 @@ end architecture;
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity contador_cm_uc is 
-	port ( 
+entity contador_cm_uc is
+	port (
 		clock      : in std_logic;
 		reset      : in std_logic;
 
-		pulso		  : in std_logic;
+		pulso	   : in std_logic;
 		fim        : in std_logic;
 		arredonda  : in std_logic;
 		tick       : in std_logic;
-		
+
 		conta_bcd  : out std_logic;
 		zera_bcd   : out std_logic;
 		conta_tick : out std_logic;
@@ -255,44 +383,44 @@ begin
     end process;
 
     -- logica de proximo estado
-    process (pulso, fim, arredonda, tick, Eatual) 
+    process (pulso, fim, arredonda, tick, Eatual)
     begin
       case Eatual is
         when espera =>          if pulso='1' then Eprox <= prepara;
                                 else              Eprox <= espera;
                                 end if;
-										  
+
 		  when prepara =>             Eprox <= incrementa_tk;
-										  
+
         when incrementa_tk =>   if pulso='0' and arredonda='0' then Eprox <= final;
 										  elsif pulso='0' and arredonda='1' then Eprox <= incrementa_cm; -- Precisa contar mais 1 para arredondar
 										  elsif fim='1' then Eprox <= final; -- Acabou contagem do BCD, finaliza retornando valor maximo
 										  elsif tick='1' then Eprox <= incrementa_cm; -- Recebeu tick para incrementar 1 cm
                                 else              Eprox <= incrementa_tk;
                                 end if;
-										  
+
         when incrementa_cm =>   if pulso='0' then Eprox <= final;
                                 else              Eprox <= incrementa_tk;
                                 end if;
 
         when final =>             Eprox <= espera;
-		  
+
         when others =>          Eprox <= espera;
       end case;
     end process;
 
   -- saidas de controle
-  with Eatual select 
+  with Eatual select
       zera_bcd <= '1' when prepara, '0' when others;
-  with Eatual select 
+  with Eatual select
       zera_tick <= '1' when prepara, '0' when others;
-  with Eatual select 
+  with Eatual select
       conta_bcd <= '1' when incrementa_cm, '0' when others;
-  with Eatual select 
+  with Eatual select
       conta_tick <= '1' when incrementa_tk, '0' when others;
-  with Eatual select 
+  with Eatual select
       pronto <= '1' when final, '0' when others;
-		
+
 end architecture fsm_arch;
 
 ------------------------------------------------------
@@ -311,15 +439,15 @@ entity contador_cm is
 		clock   : in  std_logic;
 		reset   : in  std_logic;
 		pulso   : in  std_logic;
-		contagem : out std_logic_vector(11 downto 0);
+		contagem : out std_logic_vector(15 downto 0);
 		pronto  : out std_logic
 	);
 end entity;
 
 architecture arch of contador_cm is
 
-component contador_cm_uc is 
-	port ( 
+component contador_cm_uc is
+	port (
 		clock      : in std_logic;
 		reset      : in std_logic;
 
@@ -327,7 +455,7 @@ component contador_cm_uc is
 		fim        : in std_logic;
 		arredonda  : in std_logic;
 		tick       : in std_logic;
-		
+
 		conta_bcd  : out std_logic;
 		zera_bcd   : out std_logic;
 		conta_tick : out std_logic;
@@ -343,20 +471,20 @@ component contador_cm_fd is
 	);
 	port (
 		clock      : in  std_logic;
-		
+
 		-- Entradas de controle
 		conta_bcd  : in  std_logic;
 		zera_bcd   : in  std_logic;
 		conta_tick : in  std_logic;
 		zera_tick  : in  std_logic;
-		
+
 		-- Saidas de controle
 		fim       : out std_logic;
 		arredonda : out std_logic;
 		tick      : out std_logic;
 
 		-- Saida da contagem
-		contagem   : out std_logic_vector(11 downto 0)
+		contagem   : out std_logic_vector(15 downto 0)
 	);
 end component;
 
@@ -374,14 +502,14 @@ begin
 		fim => s_fim_cont_bcd,
 		arredonda => s_arredonda,
 		tick => s_tick,
-		
+
 		conta_bcd => s_conta_bcd,
 		zera_bcd => s_zera_bcd,
 		conta_tick => s_conta_tick,
 		zera_tick => s_zera_tick,
 		pronto => pronto
 	);
-	
+
 	fd: contador_cm_fd generic map(R => R, N => N) port map(
 		clock => clock,
 		conta_bcd => s_conta_bcd,
@@ -395,7 +523,7 @@ begin
 		-- Saida da contagem
 		contagem => contagem
 	);
-	
+
 
 end architecture;
 
@@ -408,13 +536,13 @@ end architecture;
 -- Projeto   : Experiencia 4 - Interface com sensor de distancia
 -------------------------------------------------------------------------
 -- Descricao : gera pulso de saida com largura pulsos de clock
---             
+--
 --             parametro generic: largura
---             
+--
 -------------------------------------------------------------------------
 -- Revisoes  :
 --     Data        Versao  Autor             Descricao
---     09/09/2019  1.0     Edson Midorikawa  criacao 
+--     09/09/2019  1.0     Edson Midorikawa  criacao
 --     12/09/2022  1.1     Edson Midorikawa  revisao do codigo
 -------------------------------------------------------------------------
 --
@@ -510,12 +638,12 @@ entity interface_hcrs04_fd is
 		registra   : in std_logic;
 		gera       : in std_logic;
 		reset      : in std_logic;
-		
+
 		fim        : out std_logic;
 		fim_medida : out std_logic;
 		trigger    : out std_logic;
-		
-		distancia : out std_logic_vector(11 downto 0)
+
+		distancia : out std_logic_vector(15 downto 0)
 	);
 end entity;
 
@@ -530,21 +658,21 @@ component contador_cm is
 		clock   : in  std_logic;
 		reset   : in  std_logic;
 		pulso   : in  std_logic;
-		contagem : out std_logic_vector(11 downto 0);
+		contagem : out std_logic_vector(15 downto 0);
 		pronto  : out std_logic
 	);
 end component;
 
 component registrador_n is
     generic (
-       constant N: integer := 8 
+       constant N: integer := 8
     );
     port (
        clock  : in  std_logic;
        clear  : in  std_logic;
        enable : in  std_logic;
        D      : in  std_logic_vector (N-1 downto 0);
-       Q      : out std_logic_vector (N-1 downto 0) 
+       Q      : out std_logic_vector (N-1 downto 0)
     );
 end component;
 
@@ -562,28 +690,28 @@ component gerador_pulso is
    );
 end component;
 
-signal s_contagem: std_logic_vector(11 downto 0);
+signal s_contagem: std_logic_vector(15 downto 0);
 signal s_limpa_reg: std_logic;
 
 begin
 
-	cont_cm: contador_cm generic map(R=>2941, N=>12) port map(
+	cont_cm: contador_cm generic map(R=>588, N=>16) port map(
 		clock   => clock,
 		reset   => zera,
-		pulso   => pulso,   
+		pulso   => pulso,
 		contagem => s_contagem,
 		pronto  => fim_medida
 	);
-	
-	reg_saida: registrador_n generic map(12) port map(
+
+	reg_saida: registrador_n generic map(16) port map(
 		clock => clock,
 		clear => s_limpa_reg,
 		enable => registra,
 		D => s_contagem,
 		Q => distancia
 	);
-	
-	gen_pulso: gerador_pulso generic map(500) port map(
+
+	gen_pulso: gerador_pulso generic map(100) port map(
       clock => clock,
       reset => zera,
       gera => gera,
@@ -591,8 +719,8 @@ begin
       pulso => trigger,
       pronto => open
 	);
-	
-	s_limpa_reg <= zera or reset;
+
+	s_limpa_reg <= reset;
 
 end architecture;
 
@@ -606,7 +734,7 @@ end architecture;
 --------------------------------------------------------------------
 -- Descricao : unidade de controle do circuito de interface com
 --             sensor de distancia
---             
+--
 --             implementa arredondamento da medida
 --------------------------------------------------------------------
 -- Revisoes  :
@@ -619,8 +747,8 @@ end architecture;
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity interface_hcsr04_uc is 
-    port ( 
+entity interface_hcsr04_uc is
+    port (
         clock      : in  std_logic;
         reset      : in  std_logic;
         medir      : in  std_logic;
@@ -630,12 +758,12 @@ entity interface_hcsr04_uc is
         gera       : out std_logic;
         registra   : out std_logic;
         pronto     : out std_logic;
-        db_estado  : out std_logic_vector(3 downto 0) 
+        db_estado  : out std_logic_vector(3 downto 0)
     );
 end interface_hcsr04_uc;
 
 architecture fsm_arch of interface_hcsr04_uc is
-    type tipo_estado is (inicial, preparacao, envia_trigger, 
+    type tipo_estado is (inicial, preparacao, envia_trigger,
                          espera_echo, medida, armazenamento, final);
     signal Eatual, Eprox: tipo_estado;
 begin
@@ -646,17 +774,15 @@ begin
         if reset = '1' then
             Eatual <= inicial;
         elsif clock'event and clock = '1' then
-            Eatual <= Eprox; 
+            Eatual <= Eprox;
         end if;
     end process;
 
     -- logica de proximo estado
-    process (medir, echo, fim_medida, Eatual) 
+    process (medir, echo, fim_medida, Eatual)
     begin
       case Eatual is
-        when inicial =>         if medir='1' then Eprox <= preparacao;
-                                else              Eprox <= inicial;
-                                end if;
+        when inicial =>         Eprox <= preparacao;
         when preparacao =>      Eprox <= envia_trigger;
         when envia_trigger =>   Eprox <= espera_echo;
         when espera_echo =>     if echo='0' then Eprox <= espera_echo;
@@ -672,23 +798,23 @@ begin
     end process;
 
   -- saidas de controle
-  with Eatual select 
+  with Eatual select
       zera <= '1' when preparacao, '0' when others;
   with Eatual select
       gera <= '1' when envia_trigger, '0' when others;
   with Eatual select
       registra <= '1' when armazenamento, '0' when others;
   with Eatual select
-      pronto <= '1' when final, '0' when others;
+      pronto <= '1' when final, '1' when inicial, '0' when others;
 
   with Eatual select
-      db_estado <= "0000" when inicial, 
-                   "0001" when preparacao, 
-                   "0010" when envia_trigger, 
+      db_estado <= "0000" when inicial,
+                   "0001" when preparacao,
+                   "0010" when envia_trigger,
                    "0011" when espera_echo,
-                   "0100" when medida, 
-                   "0101" when armazenamento, 
-                   "1111" when final, 
+                   "0100" when medida,
+                   "0101" when armazenamento,
+                   "1111" when final,
                    "1110" when others;
 
 end architecture fsm_arch;
@@ -707,9 +833,9 @@ entity interface_hcsr04 is
 		medir : in std_logic;
 		echo : in std_logic;
 		trigger : out std_logic;
-		medida : out std_logic_vector(11 downto 0); -- 3 digitos BCD
-		pronto : out std_logic;
-	); 
+		medida : out std_logic_vector(15 downto 0); -- 3 digitos BCD
+		pronto : out std_logic
+	);
 end entity interface_hcsr04;
 
 architecture arch of interface_hcsr04 is
@@ -722,17 +848,17 @@ component interface_hcrs04_fd is
 		registra   : in std_logic;
 		gera       : in std_logic;
 		reset      : in std_logic;
-		
+
 		fim        : out std_logic;
 		fim_medida : out std_logic;
 		trigger    : out std_logic;
-		
-		distancia : out std_logic_vector(11 downto 0)
+
+		distancia : out std_logic_vector(15 downto 0)
 	);
 end component;
 
-component interface_hcsr04_uc is 
-    port ( 
+component interface_hcsr04_uc is
+    port (
         clock      : in  std_logic;
         reset      : in  std_logic;
         medir      : in  std_logic;
@@ -742,7 +868,7 @@ component interface_hcsr04_uc is
         gera       : out std_logic;
         registra   : out std_logic;
         pronto     : out std_logic;
-        db_estado  : out std_logic_vector(3 downto 0) 
+        db_estado  : out std_logic_vector(3 downto 0)
     );
 end component;
 
@@ -756,14 +882,14 @@ begin
 		registra => s_registra,
 		gera => s_gera,
 		reset => reset,
-		
+
 		fim => open,
 		fim_medida => s_fim_medida,
 		trigger => trigger,
-		
+
 		distancia => medida
 	);
-	
+
 	uc: interface_hcsr04_uc port map(
 		clock => clock,
 		reset => reset,
@@ -773,7 +899,7 @@ begin
 		zera => s_zera,
 		gera => s_gera,
 		registra => s_registra,
-		pronto => pronto,
+		pronto => pronto
 	);
 
 end architecture;

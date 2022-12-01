@@ -13,6 +13,7 @@ from litex.soc.cores.led import LedChaser
 from status import Status
 from pong_drawer import PongDrawer
 from servo_control import ServoControl
+from interface_hcsr04 import InterfaceHcsr04
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -21,7 +22,7 @@ class _CRG(LiteXModule):
         self.rst    = Signal()
         self.cd_sys = ClockDomain()
         self.cd_vga = ClockDomain()
-        self.cd_pwm = ClockDomain()
+        self.cd_low = ClockDomain()
 
         self.pll = pll = S7MMCM(speedgrade=-1)
         self.comb += pll.reset.eq(platform.request("user_btnc") | self.rst)
@@ -29,7 +30,7 @@ class _CRG(LiteXModule):
         pll.register_clkin(platform.request("clk100"), 100e6)
         pll.create_clkout(self.cd_sys, sys_clk_freq)
         pll.create_clkout(self.cd_vga, 102.1e6)
-        pll.create_clkout(self.cd_pwm, 10e6)
+        pll.create_clkout(self.cd_low, 10e6)
         platform.add_false_path_constraints(self.cd_sys.clk, pll.clkin) # Ignore sys_clk to pll.clkin path created by SoC's rst.
         #platform.add_platform_command("set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk100_IBUF]")
 
@@ -61,16 +62,29 @@ class BaseSoC(SoCCore):
         servo_left = ServoControl()
         self.submodules.servo_left = servo_left
         self.comb += [
-            gpio.a1.eq(servo_left.controle),
+            gpio.a[0].eq(servo_left.controle),
         ]
 
         # Right servo
         servo_right = ServoControl()
         self.submodules.servo_right = servo_right
         self.comb += [
-            gpio.a2.eq(servo_right.controle),
+            gpio.a[1].eq(servo_right.controle),
         ]
 
+        # Left Sonar
+        self.submodules.hcsr04_left = hcsr04_left = InterfaceHcsr04()
+        self.comb += [
+            gpio.c0.eq(hcsr04_left.trigger),
+            hcsr04_left.echo.eq(gpio.c6),
+        ]
+
+        # Left Sonar
+        self.submodules.hcsr04_right = hcsr04_right = InterfaceHcsr04()
+        self.comb += [
+            gpio.c1.eq(hcsr04_right.trigger),
+            hcsr04_right.echo.eq(gpio.c7),
+        ]
 
         # CRG --------------------------------------------------------------------------------------
         self.crg = _CRG(platform, sys_clk_freq)

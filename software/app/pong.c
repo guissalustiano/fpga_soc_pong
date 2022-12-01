@@ -1,8 +1,11 @@
+#include <libbase/console.h>
+#include <libbase/uart.h>
 #include "pong.h"
 
 void update(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy) {
     updateScore(game);
     updatePosition(game, rightPaddleDy, leftPaddleDy);
+    // printGame(*game);
 }
 
 void updatePosition(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy) {
@@ -27,8 +30,12 @@ void updateScore(game* game) {
     else if (pointScoredAgainst(game->ball, game->leftPaddle))
         game->rightScore += 1;
 
-    game->leftWin = game->leftScore == WIN_SCORE ? 1 : 0;
-    game->rightWin = game->rightScore == WIN_SCORE ? 1 : 0;
+    if (game->leftScore == WIN_SCORE) {
+      game->leftWin = 1;
+    } 
+    if (game->rightScore == WIN_SCORE) {
+      game->rightWin = 1;
+    }
 }
 
 uint16_t pointScoredAgainst(ball ball, paddle paddle) {

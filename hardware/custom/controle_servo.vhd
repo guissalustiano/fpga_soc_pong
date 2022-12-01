@@ -52,7 +52,7 @@ begin
   begin
     case posicao is
 		-- bandeira abaixada
-      when '0' =>    s_largura <=    10_000;  -- pulso de  1.5 ms
+      when '0' =>    s_largura <=    10_000;  -- pulso de  1 ms
 		-- bandeira levantada
       when '1' =>    s_largura <=   20_000;  -- pulso de 2 ms
       when others =>  s_largura <=     0;  -- nulo   saida 0
