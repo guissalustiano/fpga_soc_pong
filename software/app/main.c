@@ -14,7 +14,7 @@
 #include "time.h"
 
 #define CLOCK_FREQUENCY 100e6
-#define UPDATE_PERIOD_IN_SECONDS 1 / 3600
+#define UPDATE_PERIOD_IN_SECONDS 1 / 60
 #define LED_BLINK_PERIOD_IN_SECONDS 3
 
 #define X_OFFSET TABLE_WIDTH/2
@@ -76,6 +76,7 @@ int main(void) {
   int16_t up, down, left, right = 0;
   uint8_t gameOn = 1;
   uint32_t leds, left_sensor, right_sensor = 0;
+  int16_t rightPaddle = 0, leftPaddle = 0;
 
   while (1) {
     if (pong.leftWin || pong.rightWin) {
@@ -111,6 +112,10 @@ int main(void) {
           leftPaddleDy = -2;
         else
           leftPaddleDy = 0;
+
+        rightPaddle = hcsr04_right_medida_read();
+        leftPaddle = hcsr04_left_medida_read();
+        printf("%d\t%d\n", leftPaddle, rightPaddle);
       }
 
       if (elapsed(&lastEvent, (CLOCK_FREQUENCY * UPDATE_PERIOD_IN_SECONDS))) {
