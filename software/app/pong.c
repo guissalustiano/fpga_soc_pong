@@ -36,6 +36,24 @@ void updateScore(game* game) {
     if (game->rightScore == WIN_SCORE) {
       game->rightWin = 1;
     }
+
+    if (game->rightWin || game->leftWin) {
+      printf("{ \
+          \"right\": { \
+              \"score\": %d,\
+              \"win\": %d \
+          },\
+          \"left\": { \
+              \"score\": %d,\
+              \"win\": %d \
+          }\
+        }\n",
+        game->rightScore,
+        game->leftScore,
+        game->rightWin,
+        game->leftWin
+      );
+    }
 }
 
 uint16_t pointScoredAgainst(ball ball, paddle paddle) {
