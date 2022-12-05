@@ -20,13 +20,16 @@
 #define X_OFFSET TABLE_WIDTH/2
 #define Y_OFFSET TABLE_HEIGHT/2
 
+#define SENSOR_MAX_THRESHOLD 30
+#define SENSOR_EXPONENTIAL_DECAY_PERCENTAGE 10
+
 
 // http://graphics.stanford.edu/~seander/bithacks.html#BitReverseObvious
 uint8_t reflectByte(uint8_t v) {
     uint8_t r = v; // r will be reversed bits of v; first get LSB of v
     int s = sizeof(v) * 8 - 1; // extra shift needed at end
 
-    for (v >>= 1; v; v >>= 1) {   
+    for (v >>= 1; v; v >>= 1) {
         r <<= 1;
         r |= v & 1;
         s--;
@@ -54,6 +57,15 @@ void draw(game pong) {
   drawer_ball_py_write(pong.ball.y + Y_OFFSET);
 }
 
+int16_t updatePaddlePosition(int16_t paddlePosition, int32_t sensorMeasurement) {
+  if (sensorMeasurement < SENSOR_MAX_THRESHOLD)
+    paddlePosition = (
+      (int16_t) sensorMeasurement
+      + (SENSOR_EXPONENTIAL_DECAY_PERCENTAGE*paddlePosition)/100
+    );
+  return paddlePosition;
+}
+
 int main(void) {
 #ifdef CONFIG_CPU_HAS_INTERRUPT
   irq_setmask(0);
@@ -64,11 +76,11 @@ int main(void) {
   time_init();
   servo_left_posicao_write(0);
   servo_right_posicao_write(0);
-  printf("####\n"); // header to easy search on usb parser
+  // enable sensor
+  hcsr04_left_medir_write(1);
+  hcsr04_right_medir_write(1);
 
-  // // enable sensor
-  // hcsr04_left_medir_write(1);
-  // hcsr04_right_medir_write(1);
+  printf("####\n"); // header to easy search on usb parser
 
   int lastEvent = 0;
   int lastPaddleEvent = 0;
@@ -80,6 +92,7 @@ int main(void) {
 
   while (1) {
     if (pong.leftWin || pong.rightWin) {
+
       if (pong.rightWin) {
         leds_out_write(0x00FF);
         servo_right_posicao_write(1);
@@ -88,11 +101,12 @@ int main(void) {
         servo_left_posicao_write(1);
       }
 
-      
       msleep(200);
       leds_out_write(0);
       msleep(200);
+
     } else if (gameOn) {
+
       if (elapsed(&lastPaddleEvent, CLOCK_FREQUENCY /16)) {
         up = button_up_output_read();
         down = button_down_output_read();
@@ -104,18 +118,22 @@ int main(void) {
         else if (up)
           rightPaddleDy = -2;
         else
-          rightPaddleDy = 0;
+          rightPaddleDy = (
+            updatePaddlePosition(pong.rightPaddle.y, hcsr04_right_medida_read() )
+            - pong.rightPaddle.y
+          );
+          rightPaddleDy /= SENSOR_MAX_THRESHOLD/2;
 
         if (down)
           leftPaddleDy = 2;
         else if (left)
           leftPaddleDy = -2;
         else
-          leftPaddleDy = 0;
-
-        rightPaddle = hcsr04_right_medida_read();
-        leftPaddle = hcsr04_left_medida_read();
-        printf("%d\t%d\n", leftPaddle, rightPaddle);
+          leftPaddleDy = (
+            updatePaddlePosition(pong.leftPaddle.y, hcsr04_left_medida_read())
+            - pong.leftPaddle.y
+          );
+          leftPaddleDy /= SENSOR_MAX_THRESHOLD/2;
       }
 
       if (elapsed(&lastEvent, (CLOCK_FREQUENCY * UPDATE_PERIOD_IN_SECONDS))) {
@@ -123,6 +141,7 @@ int main(void) {
         draw(pong);
         showScore(pong);
       }
+
     }
   }
   return 0;
