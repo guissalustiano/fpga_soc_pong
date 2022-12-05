@@ -5,7 +5,6 @@
 void update(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy) {
     updateScore(game);
     updatePosition(game, rightPaddleDy, leftPaddleDy);
-    // printGame(*game);
 }
 
 void updatePosition(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy) {
@@ -32,7 +31,7 @@ void updateScore(game* game) {
 
     if (game->leftScore == WIN_SCORE) {
       game->leftWin = 1;
-    } 
+    }
     if (game->rightScore == WIN_SCORE) {
       game->rightWin = 1;
     }
@@ -49,8 +48,8 @@ void updateScore(game* game) {
           }\
         }\n",
         game->rightScore,
-        game->leftScore,
         game->rightWin,
+        game->leftScore,
         game->leftWin
       );
     }
@@ -59,7 +58,7 @@ void updateScore(game* game) {
 uint16_t pointScoredAgainst(ball ball, paddle paddle) {
     return (ball.x*paddle.x > 0) && (byteAbs(ball.x) > byteAbs(paddle.x));
 }
- 
+
 void getPaddleInside(paddle* paddle, table table) {
     if (paddle->y + PADDLE_LENGTH/2 > table.height/2)
         paddle->y = table.height/2 - PADDLE_LENGTH/2;
