@@ -5,11 +5,14 @@ from litex.gen import LiteXModule
 from litex_boards.platforms import digilent_basys3
 
 from litex.soc.cores.clock import *
-from litex.soc.integration.soc import SoCRegion
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
-from litex.soc.cores.video import VideoVGAPHY
 from litex.soc.cores.led import LedChaser
+
+from status import Status
+from pong_drawer import PongDrawer
+from servo_control import ServoControl
+from distance_sensor import DistanceSensor
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -18,21 +21,69 @@ class _CRG(LiteXModule):
         self.rst    = Signal()
         self.cd_sys = ClockDomain()
         self.cd_vga = ClockDomain()
+        self.cd_low = ClockDomain()
 
         self.pll = pll = S7MMCM(speedgrade=-1)
         self.comb += pll.reset.eq(platform.request("user_btnc") | self.rst)
 
         pll.register_clkin(platform.request("clk100"), 100e6)
         pll.create_clkout(self.cd_sys, sys_clk_freq)
-        pll.create_clkout(self.cd_vga, 40e6)
+        pll.create_clkout(self.cd_vga, 102.1e6)
+        pll.create_clkout(self.cd_low, 10e6)
         platform.add_false_path_constraints(self.cd_sys.clk, pll.clkin) # Ignore sys_clk to pll.clkin path created by SoC's rst.
         #platform.add_platform_command("set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk100_IBUF]")
 
 # BaseSoC ------------------------------------------------------------------------------------------
 
 class BaseSoC(SoCCore):
-    def __init__(self, sys_clk_freq=int(75e6), with_led_chaser=True, with_video_terminal=False, **kwargs):
+    def __init__(self, sys_clk_freq=int(75e6), **kwargs):
         platform = digilent_basys3.Platform()
+        platform.add_source_dir('hardware/custom/')
+
+        self.submodules.button_up = Status(platform.request('user_btnu'))
+        self.submodules.button_down = Status(platform.request('user_btnd'))
+        self.submodules.button_left = Status(platform.request('user_btnl'))
+        self.submodules.button_right = Status(platform.request('user_btnr'))
+
+        vga = platform.request("vga")
+        drawer = PongDrawer()
+        self.submodules.drawer = drawer
+        self.comb += [
+            vga.hsync_n.eq(drawer.Hsync),
+            vga.vsync_n.eq(drawer.Vsync),
+            vga.r.eq(drawer.vgaRed),
+            vga.g.eq(drawer.vgaGreen),
+            vga.b.eq(drawer.vgaBlue),
+        ]
+
+        gpio = platform.request('gpio')
+        # Left servo
+        servo_left = ServoControl()
+        self.submodules.servo_left = servo_left
+        self.comb += [
+            gpio.a[0].eq(servo_left.controle),
+        ]
+
+        # Right servo
+        servo_right = ServoControl()
+        self.submodules.servo_right = servo_right
+        self.comb += [
+            gpio.a[1].eq(servo_right.controle),
+        ]
+
+        # Left Sonar
+        self.submodules.hcsr04_left = hcsr04_left = DistanceSensor()
+        self.comb += [
+            gpio.c0.eq(hcsr04_left.trigger),
+            hcsr04_left.echo.eq(gpio.c6),
+        ]
+
+        # Left Sonar
+        self.submodules.hcsr04_right = hcsr04_right = DistanceSensor()
+        self.comb += [
+            gpio.c1.eq(hcsr04_right.trigger),
+            hcsr04_right.echo.eq(gpio.c7),
+        ]
 
         # CRG --------------------------------------------------------------------------------------
         self.crg = _CRG(platform, sys_clk_freq)
@@ -40,35 +91,29 @@ class BaseSoC(SoCCore):
         # SoCCore ----------------------------------_-----------------------------------------------
         SoCCore.__init__(self, platform, sys_clk_freq, ident="LiteX SoC on Basys3", **kwargs)
 
-        # Video ------------------------------------------------------------------------------------
-        if with_video_terminal:
-            self.videophy = VideoVGAPHY(platform.request("vga"), clock_domain="vga")
-            if with_video_terminal:
-                self.add_video_terminal(phy=self.videophy, timings="800x600@60Hz", clock_domain="vga")
+        self.leds = LedChaser(
+            pads         = platform.request_all("user_led"),
+            sys_clk_freq = sys_clk_freq)
 
-        # Leds -------------------------------------------------------------------------------------
-        if with_led_chaser:
-            self.leds = LedChaser(
-                pads         = platform.request_all("user_led"),
-                sys_clk_freq = sys_clk_freq)
-
-# Build --------------------------------------------------------------------------------------------  
+# Build --------------------------------------------------------------------------------------------
 def main():
     from litex.soc.integration.soc import LiteXSoCArgumentParser
     parser = LiteXSoCArgumentParser(description="LiteX SoC on Basys3")
     target_group = parser.add_argument_group(title="Target options")
-    target_group.add_argument("--build",               action="store_true", help="Build design.")
+    target_group.add_argument("--build",               action="store_true", help="Build design.", default=True)
     target_group.add_argument("--load",                action="store_true", help="Load bitstream.")
     target_group.add_argument("--sys-clk-freq",        default=75e6,        help="System clock frequency.")
-    viopts = target_group.add_mutually_exclusive_group()
-    viopts.add_argument("--with-video-terminal", action="store_true", help="Enable Video Terminal (VGA).")
     builder_args(parser)
     soc_core_args(parser)
+
+    parser.set_defaults(gateware_dir='./gateware')
+    parser.set_defaults(software_dir='./software')
+    parser.set_defaults(integrated_main_ram_size=8192)
+
     args = parser.parse_args()
 
     soc = BaseSoC(
         sys_clk_freq           = int(float(args.sys_clk_freq)),
-        with_video_terminal    = args.with_video_terminal,
         **soc_core_argdict(args)
     )
 
