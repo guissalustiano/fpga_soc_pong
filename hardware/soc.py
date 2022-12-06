@@ -61,28 +61,28 @@ class BaseSoC(SoCCore):
         servo_left = ServoControl()
         self.submodules.servo_left = servo_left
         self.comb += [
-            gpio.a[0].eq(servo_left.controle),
+            gpio.a3.eq(servo_left.controle),
         ]
 
         # Right servo
         servo_right = ServoControl()
         self.submodules.servo_right = servo_right
         self.comb += [
-            gpio.a[1].eq(servo_right.controle),
+            gpio.b3.eq(servo_right.controle),
         ]
 
         # Left Sonar
         self.submodules.hcsr04_left = hcsr04_left = DistanceSensor()
         self.comb += [
-            gpio.c0.eq(hcsr04_left.trigger),
-            hcsr04_left.echo.eq(gpio.c6),
+            gpio.a1.eq(hcsr04_left.trigger),
+            hcsr04_left.echo.eq(gpio.a7),
         ]
 
         # Left Sonar
         self.submodules.hcsr04_right = hcsr04_right = DistanceSensor()
         self.comb += [
-            gpio.c1.eq(hcsr04_right.trigger),
-            hcsr04_right.echo.eq(gpio.c7),
+            gpio.b1.eq(hcsr04_right.trigger),
+            hcsr04_right.echo.eq(gpio.b7),
         ]
 
         # CRG --------------------------------------------------------------------------------------
