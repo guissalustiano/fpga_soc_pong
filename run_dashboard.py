@@ -13,9 +13,6 @@ ref = db.reference('/scores')
 app = Dash(__name__)
 
 def gera_tabela():
-    global metricas
-    global tab_hist
-
     dict_hist_raw = ref.get()
     df_list = []
     for item in dict_hist_raw.values():
@@ -42,31 +39,36 @@ def gera_tabela():
 
     tab_hist = dash_table.DataTable(df_hist.to_dict('records'), [{"name": i, "id": i} for i in df_hist.columns])
 
-gera_tabela()
+    return metricas, tab_hist
 
-app.layout = html.Div(children=[
-    html.H1('SoC Pong - Histórico de pontuações', style={'font-family': 'Helvetica, Arial, sans-serif'}),
-    html.Hr(style={'background-color':'black', 'height': '2px', 'border':'none'}),
+def serve_layout():
+    metricas, tab_hist = gera_tabela()
 
-    html.Div(children=[tab_hist], style={'margin':'0px 100px 0px'}),
+    return html.Div(children=[
+        html.H1('SoC Pong - Histórico de pontuações', style={'font-family': 'Helvetica, Arial, sans-serif'}),
+        html.Hr(style={'background-color':'black', 'height': '2px', 'border':'none'}),
 
-    html.Hr(style={'background-color':'black', 'height': '2px', 'border':'none'}),
+        html.Div(children=[tab_hist], style={'margin':'0px 100px 0px'}),
 
-    html.Div(
-        id='metricas-teste',
-        children=[metricas],
-        style={
-            'font-family': 'Helvetica, Arial, sans-serif',
-            'border-style': 'solid',
-            'margin-left':'10% ',
-            'margin-right':'10% ',
-            'border-radius':'10px',
-            'background-color':'#f0f0f0',
-            })
-    ],
+        html.Hr(style={'background-color':'black', 'height': '2px', 'border':'none'}),
 
-    style={'text-align':'center'}
-)
+        html.Div(
+            id='metricas-teste',
+            children=[metricas],
+            style={
+                'font-family': 'Helvetica, Arial, sans-serif',
+                'border-style': 'solid',
+                'margin-left':'10% ',
+                'margin-right':'10% ',
+                'border-radius':'10px',
+                'background-color':'#f0f0f0',
+                })
+        ],
+
+        style={'text-align':'center'}
+    )
+
+app.layout = serve_layout
 
 if __name__ == '__main__':
     app.run_server(debug=True)
