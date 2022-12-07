@@ -2,12 +2,12 @@
 #include <libbase/uart.h>
 #include "pong.h"
 
-void update(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy) {
+void update(game* game, int16_t rightPaddleY, int16_t leftPaddleY) {
     updateScore(game);
-    updatePosition(game, rightPaddleDy, leftPaddleDy);
+    updatePosition(game, rightPaddleY, leftPaddleY);
 }
 
-void updatePosition(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy) {
+void updatePosition(game* game, int16_t rightPaddleY, int16_t leftPaddleY) {
     if (pointScoredAgainst(game->ball, game->rightPaddle) || pointScoredAgainst(game->ball, game->leftPaddle))
         resetBall(&game->ball);
 
@@ -16,8 +16,8 @@ void updatePosition(game* game, int16_t rightPaddleDy, int16_t leftPaddleDy) {
     if (collisionWithTable(game->ball, game->table))
         bounceOffTable(&game->ball);
 
-    movePaddle(&game->rightPaddle, rightPaddleDy);
-    movePaddle(&game->leftPaddle, leftPaddleDy);
+    game->rightPaddle.y = rightPaddleY;
+    game->leftPaddle.y = leftPaddleY;
     getPaddleInside(&game->rightPaddle, game->table);
     getPaddleInside(&game->leftPaddle, game->table);
     moveBall(&game->ball);
