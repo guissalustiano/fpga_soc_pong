@@ -24,7 +24,7 @@ while 1:
 # drop out until header
     for line in sys.stdin:
         line = line.strip('\r\n')
-        # sys.stdout.write(line + '\n')
+        sys.stdout.write(line + '\n')
         if line == "####":
             break
 
